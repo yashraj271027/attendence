@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor Attendance</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8">
+<div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 text-center">Tutor Attendance</h2>
+    <form id="attendanceForm" class="space-y-4">
+        <div>
+            <label class="block text-gray-700">Tutor ID:</label>
+            <input type="text" id="tutorId" class="w-full p-2 border rounded-lg" placeholder="Enter Tutor ID" required>
+        </div>
+        <div>
+            <label class="block text-gray-700">Place:</label>
+            <input type="text" id="place" class="w-full p-2 border rounded-lg" placeholder="Enter Place" required>
+        </div>
+        <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-lg">Submit Attendance</button>
+    </form>
+
+    <h3 class="text-xl font-bold mt-6">Attendance Records:</h3>
+    <table class="w-full mt-4 bg-white shadow-lg rounded-lg">
+        <thead>
+        <tr class="bg-blue-500 text-white">
+            <th class="p-2">Date</th>
+            <th class="p-2">Time</th>
+            <th class="p-2">Tutor ID</th>
+            <th class="p-2">Place</th>
+        </tr>
+        </thead>
+        <tbody id="attendanceTableBody">
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.getElementById("attendanceForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const tutorId = document.getElementById("tutorId").value;
+        const place = document.getElementById("place").value;
+        const currentDate = new Date();
+        const date = currentDate.toISOString().split("T")[0];
+        const time = currentDate.toLocaleTimeString();
+
+        const key = tutorId;
+        const attendance = JSON.parse(localStorage.getItem(key)) || [];
+
+        if (attendance.filter(record => record.date === date).length >= 2) {
+            alert("Attendance can only be marked twice per day.");
+            return;
+        }
+
+        attendance.push({ date, time, tutorId, place });
+        localStorage.setItem(key, JSON.stringify(attendance));
+
+        renderTable(key);
+        document.getElementById("attendanceForm").reset();
+    });
+
+    function renderTable(key) {
+        const attendance = JSON.parse(localStorage.getItem(key)) || [];
+        const tableBody = document.getElementById("attendanceTableBody");
+        tableBody.innerHTML = "";
+
+        attendance.forEach(record => {
+            const newRow = `<tr class="border-t text-center">
+                                <td class="p-2">${record.date}</td>
+                                <td class="p-2">${record.time}</td>
+                                <td class="p-2">${record.tutorId}</td>
+                                <td class="p-2">${record.place}</td>
+                            </tr>`;
+            tableBody.innerHTML += newRow;
+        });
+    }
+
+    window.onload = function () {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            renderTable(key);
+        }
+    };
+</script>
+</body>
+</html>
